@@ -1,5 +1,6 @@
 import datetime
 import reportlab
+import sys
 
 from django.db.models import Sum
 from django.http import HttpResponse, HttpResponseRedirect
@@ -15,7 +16,10 @@ from HouseManage.models import MoneyReport
 def balance_data(request):
     balance_pos = MoneyReport.objects.filter(type_service=1).aggregate(Sum('money'))
     balance_neg = MoneyReport.objects.filter(type_service=2).aggregate(Sum('money'))
-    balance = balance_pos['money__sum'] - balance_neg['money__sum']
+    try:
+        balance = balance_pos['money__sum'] - balance_neg['money__sum']
+    except:
+        balance = 0
     now = datetime.datetime.now()
     return {'date': now.strftime("%Y-%m-%d"), 'money': balance}
 
@@ -42,7 +46,7 @@ def generate_report(request):
         response['Content-Disposition'] = 'attachment; filename="money_report_%s_%s.pdf"' % (start, end)
 
         # Create the PDF object, using the response object as its "file."
-        MyFontObject = ttfonts.TTFont('Arial', 'static/Fonts/arial.ttf')
+        MyFontObject = ttfonts.TTFont('Arial', sys.path[0] + '/static/Fonts/arial.ttf')
         pdfmetrics.registerFont(MyFontObject)
         p = canvas.Canvas(response)
         p.setLineWidth(.3)
@@ -82,11 +86,11 @@ def generate_report(request):
             p.drawString(360, y - 80, ' '.join(['Баланс на %s:' % data['date'], str(data['money'])]))
 
         draw_header()
+        x = 30
+        y = 700
+        deb = 0
+        cred = 0
         if len(db_data) > 0:
-            x = 30
-            y = 700
-            deb = 0
-            cred = 0
             for item in db_data:
                 if y > 30:
                     res = draw_body(x, y, item)

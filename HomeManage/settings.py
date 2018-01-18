@@ -25,7 +25,7 @@ SECRET_KEY = '!om)p840351@3d8)!r1@)7z!hpqkes)xm%)08-lgc^btk#h(zq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['iopoz.pythonanywhere.com']
 
 
 # Application definition
