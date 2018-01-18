@@ -16,10 +16,11 @@ from HouseManage.models import MoneyReport
 def balance_data(request):
     balance_pos = MoneyReport.objects.filter(type_service=1).aggregate(Sum('money'))
     balance_neg = MoneyReport.objects.filter(type_service=2).aggregate(Sum('money'))
-    try:
-        balance = balance_pos['money__sum'] - balance_neg['money__sum']
-    except:
-        balance = 0
+    if balance_pos['money__sum'] is None:
+        balance_pos['money__sum'] = 0
+    elif balance_neg['money__sum'] is None:
+        balance_neg['money__sum'] = 0
+    balance = balance_pos['money__sum'] - balance_neg['money__sum']
     now = datetime.datetime.now()
     return {'date': now.strftime("%Y-%m-%d"), 'money': balance}
 
@@ -46,7 +47,7 @@ def generate_report(request):
         response['Content-Disposition'] = 'attachment; filename="money_report_%s_%s.pdf"' % (start, end)
 
         # Create the PDF object, using the response object as its "file."
-        MyFontObject = ttfonts.TTFont('Arial', sys.path[0] + '/static/Fonts/arial.ttf')
+        MyFontObject = ttfonts.TTFont('Arial', sys.path[0] + '/HouseManage/static/Fonts/arial.ttf')
         pdfmetrics.registerFont(MyFontObject)
         p = canvas.Canvas(response)
         p.setLineWidth(.3)
