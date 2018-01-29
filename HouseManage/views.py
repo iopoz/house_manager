@@ -53,7 +53,7 @@ def generate_report(request):
         p.setLineWidth(.3)
         p.setFont('Arial', 12)
 
-        db_data = MoneyReport.objects.filter(plan_date__range=(start, end))
+        db_data = MoneyReport.objects.filter(plan_date__range=(start, end)).order_by('plan_date')
 
         # Draw things on the PDF. Here's where the PDF generation happens.
         # See the ReportLab documentation for the full list of functionality.
