@@ -106,6 +106,7 @@ def generate_report(request):
                     res = draw_body(x, y, item)
                     deb += res['deb']
                     cred += res['cred']
+                    y -= 20
         draw_end(y, deb, cred, request)
         p.showPage()
         p.save()
