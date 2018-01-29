@@ -1,9 +1,6 @@
 import os
-import re
 import sqlite3 as db_driver
-import time
-from datetime import datetime, timedelta
-import datetime as dt_class
+import datetime
 
 
 def connect():
@@ -27,27 +24,48 @@ def add_rent(values):
     db.commit()
     terminate(db)
 
-start_date  = '2016-11-28'
-st_pos = 11
-end_date = '2017-09-28'
-mm = 10
-rent = 550
-flat = 40
-while True:
-    if start_date != end_date:
-        if st_pos <= 12:
-            year = '2016'
-            mm += 1
+
+def input_data():
+    start_date = '2017-10-28'
+    st_pos = 10
+    end_date = '2018-01-28'
+    mm = 9
+    rent = 4000
+    flat = 8
+    while True:
+        if start_date != end_date:
+            if st_pos <= 12:
+                year = '2017'
+                mm += 1
+            else:
+                year = '2018'
+                mm = st_pos - 12
+            if len(str(mm)) == 1:
+                mm = '0' + str(mm)
+            date_add = '-'.join([year, str(mm), '28'])
+            dm = '.'.join([str(mm), year[2:]])
+            values = ('Уборка %s' %dm, date_add, 2, flat, date_add, rent)
+            add_rent(values)
+            st_pos += 1
+            start_date = date_add
         else:
-            year = '2017'
-            mm = st_pos - 12
-        if len(str(mm)) == 1:
-            mm = '0' + str(mm)
-        date_add = '-'.join([year, str(mm), '28'])
-        dm = '.'.join([str(mm), year[2:]])
-        values = ('Квартплата %s' %dm, date_add, 1, flat, date_add, rent)
-        add_rent(values)
-        st_pos += 1
-        start_date = date_add
-    else:
-        break
+            break
+
+def fix_date_in_data():
+    db = connect()
+    cur = db.cursor()
+    data_rows = cur.execute('SELECT id, plan_date, HouseManage_moneyreport.current_date, name_service from HouseManage_moneyreport')
+    rows = data_rows.fetchall()
+    for row in rows:
+        date_plane_value = row[1]
+        date_cur_value = row[2]
+        if type(date_plane_value) == int:
+            date_plane_value = datetime.datetime.fromtimestamp(date_plane_value / 1000).strftime('%Y-%m-%d')
+        if type(date_cur_value) == int:
+            date_cur_value = datetime.datetime.fromtimestamp(date_cur_value / 1000).strftime('%Y-%m-%d')
+        cur.execute('UPDATE HouseManage_moneyreport SET plan_date = ?, current_date = ? WHERE id =?',
+                    (date_plane_value, date_cur_value, row[0]))
+    db.commit()
+    terminate(db)
+
+fix_date_in_data()
